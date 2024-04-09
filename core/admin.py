@@ -7,5 +7,3 @@ admin.site.register(Category)
 admin.site.register(Products)
 admin.site.register(Sales)
 admin.site.register(salesItems)
-
-asdasd

@@ -17,8 +17,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from core.views import TestView 
-from core.views import TotalSalesAPIView, GetCategoryView , GetProducts
-
+from core.views import TotalSalesAPIView, GetCategoryView , GetProducts , ProductAdd,  SalesAdd
+from core.views import GetMonth, SalesItem , MaterialsGet , GetTopCategories, GetSalesData
 
 urlpatterns = [
     path('api-auth/', include('rest_framework.urls')),
@@ -26,8 +26,17 @@ urlpatterns = [
     path('api/', TestView.as_view()),
     path('api/total-sales/', TotalSalesAPIView.as_view(), name='total_sales'),
     path('api/category/', GetCategoryView.as_view(), name='category'),
-    path('api/get-products/', GetProducts.as_view(), name='products'),
-    path('api/update-product/', GetProducts.as_view(), name='update_product'),
-    
-    
+    path('api/category-update/', GetCategoryView.as_view(), name='category_update'),
+    path('api/product-get-all/', GetProducts.as_view(), name='products'),
+    path('api/product-update/', GetProducts.as_view(), name='update_product'),
+    path('api/product-add/', ProductAdd.as_view() , name='add_product'),
+    path('api/product-delete/', ProductAdd.as_view() , name='delete_product'), 
+    path('api/sales-add/', SalesAdd.as_view() , name='sales_add'), 
+    path('api/sales-get-all/', SalesAdd.as_view() , name='sales_get_all'), 
+    path('api/sales-item-get/', SalesItem.as_view() , name='salesItem_get'), 
+    path('api/materials-get-all/', MaterialsGet.as_view() , name='materials_get'), 
+    path('api/materials-update/', MaterialsGet.as_view() , name='materials_get'),  
+    path('api/get-top-categories/', GetTopCategories.as_view() , name='materials_get'),  
+    path('api/get-sales-data/', GetSalesData.as_view() , name='materials_get'),  
+    path('api/get-month-data/', GetMonth.as_view() , name='materials_get'),  
 ]

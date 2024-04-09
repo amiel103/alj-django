@@ -1,2 +1,0 @@
-# alj django
- 
