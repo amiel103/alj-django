@@ -34,17 +34,12 @@ class Sales(models.Model):
     date_added = models.DateTimeField(default=timezone.now) 
     date_updated = models.DateTimeField(auto_now=True) 
 
-
 class Materials(models.Model):
 
-    name = models.TextField()
-    description = models.TextField()
+    product_id = models.ForeignKey(Products,on_delete=models.CASCADE)
     stock = models.FloatField(default=0)
     date_added = models.DateTimeField(default=timezone.now) 
     date_updated = models.DateTimeField(auto_now=True) 
-
-    # def __str__(self):
-    #     return self.id
 
 class salesItems(models.Model):
     sale_id = models.ForeignKey(Sales,on_delete=models.CASCADE)

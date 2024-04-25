@@ -8,7 +8,7 @@ from rest_framework import status
 from django.utils import timezone
 
 from .models import Category, Products, Sales, salesItems , Materials
-from .serializers import ProductSerializer , CategorySerializer, SalesItemsSerializer ,SalesSerializer ,MaterialsSerializer
+from .serializers import ProductSerializer , CategorySerializer, SalesItemsSerializer ,SalesSerializer ,MaterialsSerializer, MaterialsSerializer2
 from django.shortcuts import get_object_or_404
 from django.db.models import Sum
 
@@ -68,7 +68,6 @@ class GetCategoryView(APIView):
 # Create your views here.
 class GetProducts(APIView):
     def get(self, name, format=None):
-        print(name.data)
         all_products = Products.objects.all()
         products_data = []
 
@@ -108,13 +107,34 @@ class GetProducts(APIView):
 class ProductAdd(APIView):
     def post(self,request):
         if request.method == 'POST':
-            prod = Products()
             serializer = ProductSerializer(data=request.data)
+
+            print(request.data)
+
             if serializer.is_valid():
                 # 
                 serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+            if(request.data['category_id'] == 11):
+
+
+                lastProduct = Products.objects.last()
+                print('--------------------------')
+                print(lastProduct)
+                data = {
+                    "product_id":lastProduct.id,
+                    "stock":20
+                }
+                print(data)
+                ms = MaterialsSerializer2(data = data)
+                print(ms)
+
+                if ms.is_valid():
+                    ms.save()
+                    print(ms.data)
+
+                print(ms.errors)
+            return Response("inserted")
 
 class SalesAdd(APIView):
     def post(self,request):
@@ -128,6 +148,19 @@ class SalesAdd(APIView):
             last_sale = Sales.objects.last()
 
             for x in request.data['cart']:
+
+                item = get_object_or_404(Products, pk=x['productId'])
+
+                if(item.category_id.name == 'ETC'):
+                    material  = get_object_or_404(Materials, product_id=item.id)
+                    material.stock = material.stock - int(x['quantity'])
+                    material.save()
+
+                    ms = MaterialsSerializer(data = material)
+                    if ms.is_valid():
+                        ms.save()
+                        print('yeeahg')
+                    print(ms.data)
                 data = {
                     "sale_id": last_sale.id,
                     "product_id": x['productId'],
@@ -139,16 +172,15 @@ class SalesAdd(APIView):
                 serializerItems = SalesItemsSerializer(data=data)
 
                 if serializerItems.is_valid():
-                    print("olrayt")
                     serializerItems.save()
-                    print(serializerItems.data)
 
-                print(serializerItems.errors)                  
-  
-            return Response(status=status.HTTP_201_CREATED) 
+            data = {
+                "id": last_sale.id,
+                "date": last_sale.date_added
+            }
+            return Response( data ) 
         
     def get(self, name, format=None):
-        print(name.data)
         sales = Sales.objects.all()
         sales_data = []
 
@@ -191,17 +223,16 @@ class SalesItem(APIView):
     
 class MaterialsGet(APIView):
     def get(self, name, format=None):
-        print(name.data)
         all_products = Materials.objects.all()
         products_data = []
 
         # Iterate through each product and extract its values
-        for product in all_products:
+        for item in all_products:
             product_data = {
-                'id': product.id,
-                'name': product.name,
-                'description': product.description,
-                'stock': product.stock,
+                'id': item.id,
+                'name': item.product_id.name,
+                'description': item.product_id.description,
+                'stock': item.stock,
             }
             products_data.append(product_data)
 
@@ -212,12 +243,17 @@ class MaterialsGet(APIView):
     # Get the product instance
         product = get_object_or_404(Materials, pk=request.data['id'])
 
+        print(request.data)
+
         # Update the product data
         if request.method == 'POST':
             serializer = MaterialsSerializer(product, data=request.data)
             if serializer.is_valid():
                 serializer.save()
+                print(serializer.data)
                 return Response(serializer.data)
+            
+            print(serializer.errors)
             return Response(serializer.errors)
         else:
             return Response({'error': 'Method not allowed'}, status=405)  
@@ -225,31 +261,21 @@ class MaterialsGet(APIView):
 
 class GetTopCategories(APIView):
     def get(self, name, format=None):
-        print(name.data)
-        all_products = salesItems.objects.all()
+
+        category_sales = salesItems.objects.values('product_id__category_id__name')
 
         data = {}
-
-        # Iterate through each product and extract its values
-        for item in all_products:
+        # data = {}
+        for x in category_sales:
             try:
-                data[item.product_id.category_id.name] += 1
+                data[x["product_id__category_id__name"]] += 1
             except:
-                data[item.product_id.category_id.name] = 0
-            
-        label_mapping = {
-            "ETC": "etc",
-            "Tarpaulin": "tarpaulin",
-            "Photocopy": "photocopy",
-            "Print": "print",
-            "Book Binding": "book_binding",
-            "Laminate": "laminate"
-        }
+                data[x["product_id__category_id__name"]] = 0
 
-        # Map the keys to labels and calculate the corresponding values
+
         converted_data = [{"label": key, "value": value} for key, value in data.items() if value != 0]
 
-        print(converted_data)
+        # print(converted_data)
         # Return JSON response containing all products
         return Response(converted_data)
 
@@ -284,7 +310,6 @@ class GetMonth(APIView):
         # Query Sales data for each date
         sales_data = Sales.objects.filter(date_added__date__in=dates).values('date_added__date').annotate(total_sales=Sum('grand_total'))
 
-        print(sales_data)
 
         # Initialize labels and series
         labels = []
@@ -310,16 +335,9 @@ class GetMonth(APIView):
                     'fill': 'solid',
                     'data': sales_series,
                 },
-                # You can add more series if needed
-                # {
-                #     'name': 'Customers',
-                #     'type': 'area',
-                #     'fill': 'gradient',
-                #     'data': customers_series,
-                # },
+
             ]
         }
 
-        # print(output)
         return Response(output)
     

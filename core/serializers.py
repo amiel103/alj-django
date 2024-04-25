@@ -24,5 +24,11 @@ class SalesItemsSerializer(serializers.ModelSerializer):
 class MaterialsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Materials
+        fields = ['stock'] 
+
+
+class MaterialsSerializer2(serializers.ModelSerializer):
+    class Meta:
+        model = Materials
         fields = '__all__'
 
