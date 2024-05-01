@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Products , Category , Sales , salesItems, Materials
+from .models import Products , Category , Sales , salesItems, Materials, CustomUser
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
@@ -31,4 +31,10 @@ class MaterialsSerializer2(serializers.ModelSerializer):
     class Meta:
         model = Materials
         fields = '__all__'
+
+
+class CustomUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser 
+        fields = ['password']
 

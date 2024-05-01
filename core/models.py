@@ -4,6 +4,18 @@ from django.db import models
 from django.utils import timezone
 
 # Create your models here.
+from django.contrib.auth.models import AbstractBaseUser
+
+class CustomUser(AbstractBaseUser):
+    email = models.EmailField(unique=True)
+    username = None
+    first_name = models.CharField(max_length=30, blank=True)
+    last_name = models.CharField(max_length=30, blank=True)
+    password = models.CharField(max_length=128)
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = []
+
 class Category(models.Model):
     name = models.TextField()
     description = models.TextField()

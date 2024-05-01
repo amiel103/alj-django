@@ -7,10 +7,99 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.utils import timezone
 
-from .models import Category, Products, Sales, salesItems , Materials
+from .models import Category, Products, Sales, salesItems , Materials, CustomUser
 from .serializers import ProductSerializer , CategorySerializer, SalesItemsSerializer ,SalesSerializer ,MaterialsSerializer, MaterialsSerializer2
+from .serializers import CustomUserSerializer
 from django.shortcuts import get_object_or_404
 from django.db.models import Sum
+
+from django.contrib.auth import authenticate
+from django.core.exceptions import ValidationError
+from rest_framework_jwt.settings import api_settings
+
+# from rest_framework_jwt.serializers import VerifyJSONWebTokenSerializer
+from rest_framework_simplejwt.backends import TokenBackend
+
+jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
+# Obtain the JWT encoder
+jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
+
+jwt_decode_handler = api_settings.JWT_DECODE_HANDLER
+
+
+class UserLogin(APIView):
+    def post(self, request):
+        user = get_object_or_404(CustomUser, email=request.data['email'])
+
+        if user.password == request.data['password'] :
+            print("correct")
+            payload = jwt_payload_handler(user)
+            token = jwt_encode_handler(payload)
+
+            data = {
+                'accessToken': token,
+                'user':{
+                    "displayName": user.first_name +" "+ user.last_name,
+                    "email": user.email,
+                    "id": user.id
+                }
+            }
+            return Response(data, status=status.HTTP_200_OK)
+        else:
+            return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+        
+
+
+
+
+class UpdatePassword(APIView):
+    def post(self, request):
+        user = get_object_or_404(CustomUser, id=request.data['id'])
+
+        if request.method == 'POST':
+            serializer = CustomUserSerializer(user, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors)
+        else:
+            return Response({'error': 'Method not allowed'}, status=405)
+        
+
+
+
+
+
+class VerifyToken(APIView):
+    def get(self, request):
+        # print("fuck off bitch")        
+
+        # text = request.headers.get('Authorization')
+        # print(text)
+
+        return Response( jwt_decode_handler( request.GET['id'] ) )
+        # return Response('yawa')
+
+        # data = {'token': request.GET['id']}
+        # valid_data = VerifyJSONWebTokenSerializer().validate(data)
+        # user = valid_data['user']
+        
+        # return Response({'token': user})
+        
+        # print(request.META)
+        # token = request.META.get('HTTP_AUTHORIZATION')
+        # token = request.headers.get('Authorization')
+
+        return Response( token )
+        # print( jwt_decode_handler(token) )
+        # data = {'token': token}
+        # try:
+        #     valid_data = TokenBackend(algorithm='HS256').decode(token,verify=False)
+        #     user = valid_data['user']
+        #     request.user = user
+        # except ValidationError as v:
+        #     print("validation error", v)
+
 
 
 
@@ -225,6 +314,8 @@ class MaterialsGet(APIView):
     def get(self, name, format=None):
         all_products = Materials.objects.all()
         products_data = []
+
+        print('yeah')
 
         # Iterate through each product and extract its values
         for item in all_products:
