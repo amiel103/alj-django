@@ -225,6 +225,27 @@ class ProductAdd(APIView):
                 print(ms.errors)
             return Response("inserted")
 
+class ProductDelete(APIView):
+    def post(self,request):
+        if request.method == 'POST':
+
+            # serializer = ProductSerializer(data=request.data)
+
+            # print(request.data)
+            try:
+                print("yeah ========================")
+                print(request.data['id'])
+                product = Products.objects.get(id=request.data['id'])
+                product.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            except: 
+                return Response(status=status.HTTP_404_NOT_FOUND)
+            
+
+
+            
+
+
 class SalesAdd(APIView):
     def post(self,request):
         if request.method == 'POST':

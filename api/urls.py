@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from core.views import TestView 
-from core.views import TotalSalesAPIView, GetCategoryView , GetProducts , ProductAdd,  SalesAdd
+from core.views import TotalSalesAPIView, GetCategoryView , GetProducts , ProductAdd,  SalesAdd , ProductDelete
 from core.views import GetMonth, SalesItem , MaterialsGet , GetTopCategories, GetSalesData ,UserLogin , VerifyToken , UpdatePassword
 
 urlpatterns = [
@@ -32,7 +32,7 @@ urlpatterns = [
     path('api/product-get-all/', GetProducts.as_view(), name='products'),
     path('api/product-update/', GetProducts.as_view(), name='update_product'),
     path('api/product-add/', ProductAdd.as_view() , name='add_product'),
-    path('api/product-delete/', ProductAdd.as_view() , name='delete_product'), 
+    path('api/product-delete/', ProductDelete.as_view() , name='delete_product'), 
     path('api/sales-add/', SalesAdd.as_view() , name='sales_add'), 
     path('api/sales-get-all/', SalesAdd.as_view() , name='sales_get_all'), 
     path('api/sales-item-get/', SalesItem.as_view() , name='salesItem_get'), 
