@@ -41,17 +41,14 @@ class UserLogin(APIView):
                 'user':{
                     "displayName": user.first_name +" "+ user.last_name,
                     "email": user.email,
-                    "id": user.id
+                    "id": user.id,
+                    "role": user.role
                 }
             }
             return Response(data, status=status.HTTP_200_OK)
         else:
             return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
         
-
-
-
-
 class UpdatePassword(APIView):
     def post(self, request):
         user = get_object_or_404(CustomUser, id=request.data['id'])
@@ -65,11 +62,6 @@ class UpdatePassword(APIView):
         else:
             return Response({'error': 'Method not allowed'}, status=405)
         
-
-
-
-
-
 class VerifyToken(APIView):
     def get(self, request):
         # print("fuck off bitch")        
@@ -100,23 +92,18 @@ class VerifyToken(APIView):
         # except ValidationError as v:
         #     print("validation error", v)
 
-
-
-
 class TestView(APIView):
     def get(self, request, sales_id):
         sales = Sales.objects.get(pk=sales_id)
         sales_items = sales.salesitems_set.all()
         total = sum(item.total for item in sales_items)
-        return Response({'total_items': total})
-    
+        return Response({'total_items': total}) 
 
 class TotalSalesAPIView(APIView):
     def get(self, request, format=None):
         total_sales = Sales.objects.aggregate(total_sales=Sum('grand_total'))
         return Response({'total_sales': total_sales['total_sales']})
     
-
 class GetCategoryView(APIView):
     def get(self, request, format=None):
       # Retrieve all categories from the database
@@ -153,8 +140,6 @@ class GetCategoryView(APIView):
         else:
             return Response({'error': 'Method not allowed'}, status=405)
 
-
-# Create your views here.
 class GetProducts(APIView):
     def get(self, name, format=None):
         all_products = Products.objects.all()
@@ -191,7 +176,6 @@ class GetProducts(APIView):
             return Response(serializer.errors)
         else:
             return Response({'error': 'Method not allowed'}, status=405)
-
 
 class ProductAdd(APIView):
     def post(self,request):
@@ -240,11 +224,6 @@ class ProductDelete(APIView):
                 return Response(status=status.HTTP_204_NO_CONTENT)
             except: 
                 return Response(status=status.HTTP_404_NOT_FOUND)
-            
-
-
-            
-
 
 class SalesAdd(APIView):
     def post(self,request):
@@ -308,8 +287,6 @@ class SalesAdd(APIView):
     # Return JSON response containing all products
         return Response(sales_data)
         
-    
-
 class SalesItem(APIView):
     def get(self, request, format=None):
         print(request.GET['id'])
@@ -370,7 +347,6 @@ class MaterialsGet(APIView):
         else:
             return Response({'error': 'Method not allowed'}, status=405)  
         
-
 class GetTopCategories(APIView):
     def get(self, name, format=None):
 
@@ -390,7 +366,6 @@ class GetTopCategories(APIView):
         # print(converted_data)
         # Return JSON response containing all products
         return Response(converted_data)
-
 
 class GetSalesData(APIView):
     def get(self, name, format=None):
